@@ -1,103 +1,121 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react";
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { z } from "zod"
+import { X } from "lucide-react"
+
+const periodsSchema = z.number().min(30, "Período mínimo 30 dias").max(365, "Período máximo: 365 dias");
+
+export default function MultipleInput() {
+  const [inputPeriods, setInputPeriods] = useState("")
+  const [periods, setPeriods] = useState<number[]>([])
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error" | "info";
+  } | null>(null)
+
+  // Função "Adicionar"
+  const handleAdd = () => {
+    setMessage(null)
+
+    // Valida o valor inserido usando Zod (converter string para número)
+    const parsed = z.coerce.number().pipe(periodsSchema).safeParse(inputPeriods)
+
+    if (!parsed.success) {
+      setMessage({ text: parsed.error.errors[0].message, type: "error" })
+      return
+    }
+
+    const periodValue = parsed.data
+
+    // Verifica se o valor já foi adicionado anteriormente
+    if (periods.includes(periodValue)) {
+      setMessage({ text: "Este período já foi adicionado.", type: "error" });
+      return
+    }
+
+    // Se estiver tudo certo, adiona o período no array
+    setPeriods((prev) => [...prev, periodValue])
+    setInputPeriods("")
+    setMessage({ text: `Período ${inputPeriods} dias adicionado com sucesso`, type: "success" })
+  }
+
+  const handleRemove = (periodToRemove: number) => {
+    setPeriods((prev) => prev.filter((n) => n !== periodToRemove))
+    if (periods.length === 0) {
+      setMessage({ text: "", type: "info" })
+    }
+    setMessage({ text: `Período ${periodToRemove} removido`, type: "info" })
+  }
+
+  const handleSave = () => {
+    if (periods.length === 0) {
+      setMessage({ text: "Adicione ao menos um período antes de salvar", type: "info" })
+      return
+    }
+
+    setMessage({ text: `Períodos salvos: ${periods.join(", ")}`, type: "success" })
+    setPeriods([])
+  }
+  console.log(periods)
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+      <div className=" bg-white p-6 rounded-lg shadow-md w-full max-w-[900px] space-y-4">
+        <h2 className="text-xl font-semibold text-center">Cadastro de Períodos</h2>
+        <div>
+          <Input
+            type="number"
+            value={inputPeriods}
+            onChange={(e) => setInputPeriods(e.target.value)}
+            placeholder="Digite um período"
+          />
+          <Button
+            className="mt-2"
+            onClick={handleAdd}
+            disabled={!inputPeriods}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Adicionar
+          </Button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        {message && (
+          <p
+            className={`text-sm 
+              ${message.type === "error"
+                ? "text-red-600"
+                : message.type === "success"
+                  ? "text-green-600"
+                  : "text-blue-600"
+              }`}
+          >
+            {message.text}
+          </p>
+        )}
+        <div className="grid grid-cols-8 gap-2">
+          {periods.map((v) => (
+            <div
+              key={v}
+              className="flex items-center justify-between bg-muted p-1 ps-2 rounded-lg text-sm border border-gray-300"
+            >
+              {v} dias
+              <button
+                onClick={() => handleRemove(v)}
+                className="flex items-center justify-between text-red-600 rounded-full w-5 h-5 "
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <Button
+          onClick={handleSave}
+          disabled={periods.length === 0}
+          className="w-full"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Salvar todos
+        </Button>
+      </div>
     </div>
-  );
+  )
 }
