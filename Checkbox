@@ -1,0 +1,29 @@
+<style>
+/* Esconde o ícone padrão */
+.bootstrap-select.show-tick .dropdown-menu li a span.check-mark {
+    display: none !important;
+}
+
+/* Adiciona checkbox antes do texto */
+.bootstrap-select.show-tick .dropdown-menu li a .text::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border: 2px solid #999;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
+/* Marca o checkbox quando selecionado */
+.bootstrap-select.show-tick .dropdown-menu li.selected a .text::before {
+    background-color: #007bff;
+    border-color: #007bff;
+    content: '✔';
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    line-height: 14px;
+}
+</style>
