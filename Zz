@@ -1,0 +1,16 @@
+function displayFields(form, customHTML) {
+    var cargo = form.getValue("cargo"); // pega o valor do select no backend
+
+    // injeta JS no HTML que será renderizado no front
+    customHTML.append("<script>");
+    customHTML.append("$(document).ready(function() {");
+
+    if (cargo == "Gestor") {
+        customHTML.append("$('#ultimo_emprego').show();");
+    } else {
+        customHTML.append("$('#ultimo_emprego').hide();");
+    }
+
+    customHTML.append("});");
+    customHTML.append("</script>");
+}
