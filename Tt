@@ -1,0 +1,8 @@
+function formatarData(dataStr) {
+    const [dia, mes, ano] = dataStr.split("/");
+    const data = new Date(ano, mes - 1, dia);
+    return `${data.getFullYear()}${String(data.getMonth() + 1).padStart(2, '0')}${String(data.getDate()).padStart(2, '0')}`;
+}
+
+// Teste
+log.info(formatarData("30/09/2025")); // 20250930
